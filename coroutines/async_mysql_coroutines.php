@@ -4,7 +4,7 @@
 function f1()
 {
     $db = new db();
-    $obj = $db->async_query('select sleep(1)');
+    $obj = $db->async_query('select sleep(5)');
     echo "f1 async_query \n";
     yield $obj;
     $row = $db->fetch();
@@ -15,7 +15,7 @@ function f1()
 function f2()
 {
     $db = new db();
-    $obj = $db->async_query('select sleep(1)');
+    $obj = $db->async_query('select sleep(5)');
     echo "f2 async_query\n";
     yield $obj;
     $row = $db->fetch();
@@ -43,10 +43,10 @@ class db
     private $obj;
 
     function getConn(){
-        $host = 'localhost';
+        $host = 'p:localhost';
         $user = 'root';
-        $password = '';
-        $database = 'employees';
+        $password = 'test';
+        $database = 'foundation';
         $this->obj = new mysqli($host, $user, $password, $database);
         self::$links[spl_object_hash($this->obj)] = $this->obj;
         return self::$links[spl_object_hash($this->obj)];
