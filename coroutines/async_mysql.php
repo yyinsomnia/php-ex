@@ -2,8 +2,8 @@
 
 $host = 'localhost';
 $user = 'root';
-$pwd = '';
-$db = 'employees';
+$pwd = 'test';
+$db = 'foundation';
 
 $result = ['Morton' => 0, 'Rosen' => 0, 'Rissland' => 0];
 
