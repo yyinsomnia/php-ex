@@ -14,6 +14,46 @@ class LeoContactFilter
     const FOUR00_TYPE = 3;
     const EIGHT00_TYPE =4;
 
+    public static function filterContactMobile($str)
+    {
+        $arr = self::filterContact($str);
+        if ($arr[1] === self::MOBILE_TYPE) {
+            return $arr[0];
+        } else {
+            return '';
+        }
+    }
+
+    public static function filterContactTel($str)
+    {
+        $arr = self::filterContact($str);
+        if ($arr[1] === self::TEL_TYPE) {
+            return $arr[0];
+        } else {
+            return '';
+        }
+    }
+
+    public static function filterContact400($str)
+    {
+        $arr = self::filterContact($str);
+        if ($arr[1] === self::FOUR00_TYPE) {
+            return $arr[0];
+        } else {
+            return '';
+        }
+    }
+
+    public static function filterContact800($str)
+    {
+        $arr = self::filterContact($str);
+        if ($arr[1] === self::EIGHT00_TYPE) {
+            return $arr[0];
+        } else {
+            return '';
+        }
+    }
+
     public static function filterContact($str)
     {
         $arr = preg_split('//u', $str, -1, PREG_SPLIT_NO_EMPTY);
@@ -161,8 +201,11 @@ class LeoContactFilter
 
     }
 
-    public static function filterMobile($arr)
+    protected static function filterMobile($arr)
     {
+        if (is_string($arr)) {
+            $arr = preg_split('//u', $arr, -1, PREG_SPLIT_NO_EMPTY);
+        }
         $res = '';
         if (($len = count($arr)) === 0) {
             return '';
@@ -187,7 +230,7 @@ class LeoContactFilter
      * @param $arr
      * @return string
      */
-    public static function filterTel($arr)
+    protected static function filterTel($arr)
     {
         $res = '';
         if (($len = count($arr)) === 0) {
@@ -302,7 +345,7 @@ class LeoContactFilter
 
     }
 
-    public static function filter400($arr)
+    protected static function filter400($arr)
     {
         $res = '';
         if (($len = count($arr)) === 0) {
@@ -324,8 +367,11 @@ class LeoContactFilter
     }
 
 
-    public static function filter800($arr)
+    protected static function filter800($arr)
     {
+        if (is_string($arr)) {
+            $arr = preg_split('//u', $arr, -1, PREG_SPLIT_NO_EMPTY);
+        }
         $res = '';
         if (($len = count($arr)) === 0) {
             return '';
