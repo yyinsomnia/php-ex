@@ -59,7 +59,7 @@ class LeoContactFilter
         $arr = preg_split('//u', $str, -1, PREG_SPLIT_NO_EMPTY);
         $len = count($arr);
         $index = 0;
-        $empty_return_arr = ['', SELF::EMPTY_TYPE];
+        $empty_return_arr = ['', self::EMPTY_TYPE];
 
         /* +86, 0086, +0086 */
         $head_5 = '';
@@ -328,20 +328,32 @@ class LeoContactFilter
         }
         /* 2nd finish */
 
+        $one_plus_two_length = strlen($res);
+
         $res .= '-';
 
         /* 3rd begin */
+        $third_len = 0;
         while ($index < $len) {
             while (!is_numeric($arr[$index])) {
                 if (++$index >= $len) {
-                    return rtrim($res, '-');
+                    if ($third_len > 5) {
+                        return substr($res, 0, $one_plus_two_length);
+                    } else {
+                        return rtrim($res, '-');
+                    }
                 }
             }
             $res .= $arr[$index++];
+            $third_len++;
         }
         /* 3rd finish */
 
-        return rtrim($res, '-');
+        if ($third_len > 5) {
+            return substr($res, 0, $one_plus_two_length);
+        } else {
+            return rtrim($res, '-');
+        }
 
     }
 
