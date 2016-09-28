@@ -2,6 +2,7 @@
 
 class StdTel
 {
+    const DEFAULT_COUNTRY_CODE = '86';
     public $countryCode;
     public $cityCode;
     public $number;
@@ -140,53 +141,42 @@ class Lexer
 
     public function match()
     {
-        if ($this->planA() || $this->planB() || $this->planC()) {
-            return true;
-        } else {
-            return false;
+        foreach ($this->internationalPrefixNumDict as $num => $_str) {
+            if (strpos($this->numTel, $num, $this->pos) === $this->pos) {
+                $this->pos += strlen($num);
+            }
         }
+
+        foreach ($this->countryCodeDict as $num => $_str) {
+            if (strpos($this->numTel, $num, $this->pos) === $this->pos) {
+                $this->stdTel->countryCode = $num;
+                $this->pos += strlen($num);
+            }
+        }
+
+        if (!isset($this->stdTel->countryCode)) {
+            $this->stdTel->countryCode = StdTel::DEFAULT_COUNTRY_CODE;
+        }
+
+        foreach ($this->countryCodeDict[$this->stdTel->countryCode]['city_code'] as $num => $_str) {
+            if (strpos($this->numTel, $num, $this->pos) === $this->pos ||
+                strpos($this->numTel, "0{$num}", $this->pos) === $this->pos
+            ) {
+                $this->stdTel->cityCode = $num;
+                $this->pos += strlen($num);
+            }
+        }
+        if (!isset($this->stdTel->cityCode)) {
+            throw new LengthException('tel must has city code!');
+        }
+
+        $this->stdTel->number = substr($this->numTel, $this->pos);
     }
 
     public function setOriginTel($tel)
     {
         $this->originTel = $tel;
         $this->originTelLen = strlen($tel);
-    }
-
-    /**
-     * 字冠->国家->城市->号码
-     */
-    private function planA()
-    {
-        $this->init();
-        while (true) {
-            switch ($this->state) {
-                case self::STATE_INIT:
-                    $this->matchPrefix();
-                case self::STATE_PREFIX_MATCHED:
-                    $this->matchCountry();
-                case self::STATE_COUNTRY_MATCHED:
-                    $this->matchCity();
-                case self::STATE_CITY_MATCHED:
-                    break;
-            }
-        }
-    }
-
-    /**
-     * 国家->城市->号码
-     */
-    private function planB()
-    {
-        $this->init();
-    }
-
-    /**
-     * 城市->号码
-     */
-    private function planC()
-    {
-        $this->init();
     }
 
 
