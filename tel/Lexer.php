@@ -11,6 +11,28 @@ class StdTel
         return $this->countryCode . $this->cityCode . $this->number;
     }
 
+    public function reset()
+    {
+        $this->countryCode = null;
+        $this->cityCode = null;
+        $this->number = null;
+    }
+
+}
+
+class StrHelper
+{
+    public static function getNum($str)
+    {
+        $ret = '';
+        $len = strlen($str);
+        for ($i = 0; $i < $len; $i++){
+            if(is_numeric($str[$i])){
+                $ret .= $str[$i];
+            }
+        }
+        return $ret;
+    }
 
 }
 
@@ -53,10 +75,25 @@ class Lexer
     private $countryCodeDict;
 
     /**
+     * 只有数字的电话号码
+     * @var string
+     */
+    private $numTel;
+
+    /**
+     * 只有数字的电话号码长度
+     * @var int
+     */
+    private $numTelLen;
+
+    /**
      * @var string
      */
     private $originTel;
 
+    /**
+     * @var int
+     */
     private $originTelLen;
 
     /**
@@ -68,21 +105,37 @@ class Lexer
     {
         $this->internationalPrefixNumDict = $internationalPrefixNumDict;
         $this->countryCodeDict = $countryCodeDict;
+        $this->stdTel = new StdTel();
 
         $this->init();
     }
 
     private function init()
     {
+        $this->reset();
+    }
+
+    private function reset()
+    {
         $this->state = self::STATE_INIT;
         $this->pos = 0;
-        $this->stdTel = new StdTel();
+        $this->stdTel->reset();
     }
 
     public function handle($tel)
     {
+        
         $this->setOriginTel($tel);
+    }
 
+    /**
+     * 只要数字
+     * @return  void
+     */
+    public function achieveNum()
+    {
+        $this->numTel = StrHelper::getNum($this->originTel);
+        $this->numTelLen = strlen($this->numTel);
     }
 
     public function match()
