@@ -1,20 +1,42 @@
 <?php
+/**
+ *
+ */
 
 class StdTel
 {
     const DEFAULT_COUNTRY_CODE = '86';
     public $countryCode;
+    public $agencyCode;
     public $cityCode;
     public $number;
 
+    
     public function __toString()
     {
-        return $this->countryCode . $this->cityCode . $this->number;
+        if (isset($this->agencyCode)) {
+            return $this->toString4Agency();
+        } elseif (isset($this->countryCode)) {
+            return $this->toString4Country();
+        } elseif (isset($this->number)) {
+            return $this->number;
+        }
+    }
+
+    private function toString4Country()
+    {
+        return $this->countryCode . '-' . $this->cityCode . '-' . $this->number;
+    }
+
+    private function toString4Agency()
+    {
+        return $this->agencyCode . '-' . $this->number;
     }
 
     public function reset()
     {
         $this->countryCode = null;
+        $this->agencyCode = null;
         $this->cityCode = null;
         $this->number = null;
     }
@@ -76,6 +98,11 @@ class Lexer
     private $countryCodeDict;
 
     /**
+     * @var array
+     */
+    private $agencyCodeDict;
+
+    /**
      * 只有数字的电话号码
      * @var string
      */
@@ -102,10 +129,12 @@ class Lexer
      */
     private $stdTel;
 
-    public function __construct($internationalPrefixNumDict, $countryCodeDict)
+    public function __construct($internationalPrefixNumDict, $countryCodeDict, $agencyCodeDict)
     {
         $this->internationalPrefixNumDict = $internationalPrefixNumDict;
         $this->countryCodeDict = $countryCodeDict;
+        $this->agencyCodeDict = $agencyCodeDict;
+
         $this->stdTel = new StdTel();
 
         $this->init();
@@ -125,8 +154,10 @@ class Lexer
 
     public function handle($tel)
     {
-        
+        $this->reset();
         $this->setOriginTel($tel);
+        $this->achieveNum();
+        $this->match();
     }
 
     /**
@@ -142,34 +173,51 @@ class Lexer
     public function match()
     {
         foreach ($this->internationalPrefixNumDict as $num => $_str) {
-            if (strpos($this->numTel, $num, $this->pos) === $this->pos) {
+            if (strpos($this->numTel, "{$num}", $this->pos) === $this->pos) {
                 $this->pos += strlen($num);
             }
         }
 
         foreach ($this->countryCodeDict as $num => $_str) {
-            if (strpos($this->numTel, $num, $this->pos) === $this->pos) {
+            if (strpos($this->numTel, "{$num}", $this->pos) === $this->pos) {
                 $this->stdTel->countryCode = $num;
                 $this->pos += strlen($num);
+                break;
             }
         }
 
-        if (!isset($this->stdTel->countryCode)) {
-            $this->stdTel->countryCode = StdTel::DEFAULT_COUNTRY_CODE;
-        }
-
-        foreach ($this->countryCodeDict[$this->stdTel->countryCode]['city_code'] as $num => $_str) {
-            if (strpos($this->numTel, $num, $this->pos) === $this->pos ||
-                strpos($this->numTel, "0{$num}", $this->pos) === $this->pos
-            ) {
-                $this->stdTel->cityCode = $num;
+        foreach ($this->agencyCodeDict as $num => $_str) {
+            if (strpos($this->numTel, "{$num}", $this->pos) === $this->pos) {
+                $this->stdTel->agencyCode = $num;
                 $this->pos += strlen($num);
+                break;
             }
         }
-        if (!isset($this->stdTel->cityCode)) {
-            throw new LengthException('tel must has city code!');
-        }
 
+        // 匹配了代理号码的后面直接跟电话号码
+        if (isset($this->stdTel->agencyCode)) {
+            ;
+        } else {
+            if (!isset($this->stdTel->countryCode)) {
+                $this->stdTel->countryCode = StdTel::DEFAULT_COUNTRY_CODE;
+            }
+
+            foreach ($this->countryCodeDict[$this->stdTel->countryCode]['city_code'] as $num => $_str) {
+                if (strpos($this->numTel, "{$num}", $this->pos) === $this->pos ||
+                    strpos($this->numTel, "0{$num}", $this->pos) === $this->pos
+                ) {
+                    $this->stdTel->cityCode = $num;
+                    $this->pos += strlen($num);
+                    break;
+                }
+            }
+            if (!isset($this->stdTel->cityCode)) {
+                //throw new Exception("tel {$this->originTel} must has city code!");
+                $this->reset();
+            }
+        }
+        
+        
         $this->stdTel->number = substr($this->numTel, $this->pos);
     }
 
@@ -177,6 +225,11 @@ class Lexer
     {
         $this->originTel = $tel;
         $this->originTelLen = strlen($tel);
+    }
+
+    public function getStdTel()
+    {
+        return $this->stdTel;
     }
 
 
