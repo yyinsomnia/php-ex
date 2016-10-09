@@ -330,6 +330,37 @@ return array(
             '909' => '',
         ),
     ),
+    '852' =>array(
+        'name' => '香港',
+        'city_code' => array(
+
+        ),
+    ),
+    '853' =>array(
+        'name' => '澳门',
+        'city_code' => array(
+            
+        ),
+    ),
+    '886' => array(
+        'name' => '台湾',
+        'city_code' => array(
+            
+        ),
+     ),
+     '81' => array(
+        'name' => '日本',
+        'city_code' => array(
+            
+        ),
+     ),
+     '82' => array(
+        'name' => '韩国',
+        'city_code' => array(
+            
+        ),
+     ),
+    /**
     '1' =>array(
         'name' => '美国',
         'city_code' => array(
@@ -767,4 +798,5 @@ return array(
             '989' => '',
         ),
     ),
+    */
 );
