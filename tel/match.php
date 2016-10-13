@@ -1,8 +1,9 @@
 <?php
 ini_set('memory_limit', '1024M');
 
-$tel_for_test = explode("\n", file_get_contents(__DIR__ . '/pianzi_phones.txt'));
-//$tel_for_test = array('01013911710090', );
+$tel_for_test = explode("\n", file_get_contents(__DIR__ . '/caller_sample.txt'));
+//$tel_for_test = array('95533', );
+
 
 $internationalPrefixNumDict = require __DIR__ . '/international_prefix_num.php';
 $countryCode = require __DIR__ . '/country_code.php';
@@ -16,10 +17,11 @@ $lexer = new Lexer($internationalPrefixNumDict, $countryCode, $agencyCode, $spCo
 $len_dict = array();
 
 foreach ($tel_for_test as $t) {
-    $lexer->setOriginTel($t);
-    $lexer->achieveNum();
-    $len_dict[$lexer->numTelLen]++;
-    //usleep(100000);
+    if ($lexer->handle($t)) {
+        echo $t . "\t" . $lexer->getStdTel() . "\t" . PHP_EOL;
+    } else {
+        //echo $t . "\t" . $lexer->getStdTel() . "\t" . PHP_EOL;
+    }
 }
-ksort($len_dict);
-print_r($len_dict);
+
+//print_r($len_dict);

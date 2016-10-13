@@ -23,6 +23,8 @@ class StdTel
             return $this->toString4Country();
         } elseif (isset($this->number)) {
             return $this->number;
+        } else {
+            return '';
         }
     }
 
@@ -155,6 +157,11 @@ class Lexer
         $this->init();
     }
 
+    public function __get($name)
+    {
+        return $this->{$name};
+    }
+
     private function init()
     {
         $this->reset();
@@ -207,6 +214,7 @@ class Lexer
             if (strpos($this->numTel, "{$num}", $this->pos) === $this->pos) {
                 $this->stdTel->agencyCode = $num;
                 $this->pos += strlen($num);
+                $this->stdTel->number = substr($this->numTel, $this->pos);
                 $matched = true; //匹配代理电话
                 break;
             }
@@ -220,21 +228,27 @@ class Lexer
                 $this->stdTel->countryCode = StdTel::DEFAULT_COUNTRY_CODE;
             }
 
-            foreach ($this->countryCodeDict[$this->stdTel->countryCode]['city_code'] as $num => $_str) {
-                if (strpos($this->numTel, "0{$num}", $this->pos) === $this->pos) {
-                    $this->stdTel->cityCode = $num;
-                    $this->pos += strlen($num) + 1;
-                    $this->stdTel->number = substr($this->numTel, $this->pos);
-                    break;
+            if ($this->numTelLen > 5) { //比5位长再去匹配区号
+                foreach ($this->countryCodeDict[$this->stdTel->countryCode]['city_code'] as $num => $_str) {
+                    if (strpos($this->numTel, "0{$num}", $this->pos) === $this->pos) {
+                        $this->stdTel->cityCode = $num;
+                        $this->pos += strlen($num) + 1;
+                        $this->stdTel->number = substr($this->numTel, $this->pos);
+                        break;
+                    }
+                    if (strpos($this->numTel, "{$num}", $this->pos) === $this->pos) {
+                        $this->stdTel->cityCode = $num;
+                        $this->pos += strlen($num);
+                        $this->stdTel->number = substr($this->numTel, $this->pos);
+                        break;
+                    }
                 }
-                if (strpos($this->numTel, "{$num}", $this->pos) === $this->pos) {
-                    $this->stdTel->cityCode = $num;
-                    $this->pos += strlen($num);
-                    $this->stdTel->number = substr($this->numTel, $this->pos);
-                    break;
-                }
+            } else {
+                ;
             }
             $this->stdTel->number = substr($this->numTel, $this->pos);
+
+
 
             if (!self::validatePhone($this->stdTel)) {
                 $this->reset();
@@ -273,7 +287,10 @@ class Lexer
             $isLegal = true;
             switch ($cityCodeLen) {
                 case 0:
-                    $isLegal = $numberLen === 11; //手机号
+                    $isLegal = 
+                    ($numberLen === 11 && strpos($tel->number, '1') === 0) || 
+                    ($numberLen === 10 && strpos($tel->number, '400') === 0) ||
+                    ($numberLen === 10 && strpos($tel->number, '800') === 0); 
                     break;
                 case 2:
                 case 3:
