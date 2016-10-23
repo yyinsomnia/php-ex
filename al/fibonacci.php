@@ -1,7 +1,6 @@
 <?php
 
-function fibonacci_fast($i)
-{
+function fibonacci_fast($i) {
 	static $res;
 
 	if (isset($res[$i])) {
@@ -20,8 +19,7 @@ function fibonacci_fast($i)
 	}
 }
 
-function fibonacci_naive($i)
-{
+function fibonacci_naive($i) {
 	if ($i == 0) {
 		return 0;
 	} elseif ($i == 1) {
@@ -29,6 +27,10 @@ function fibonacci_naive($i)
 	} else {
 		return fibonacci($i - 1) + fibonacci($i - 2);
 	}
+}
+
+function fibonacci($i) {
+	return fibonacci_native($i);
 }
 
 var_dump(fibonacci(30));
